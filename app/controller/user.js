@@ -1,5 +1,6 @@
 const md5 = require('md5')
 const BaseController = require('./base')
+const jwt = require('jsonwebtoken')
 
 const HashSalt = '>0<hehuangz^#^' // 暂时写死
 
@@ -12,7 +13,25 @@ const createRule = {
 
 class UserController extends BaseController {
   async login() {
-   
+    const { ctx, app } = this
+    const { email, pwd, captcha } = ctx.request.body
+    if (captcha.toUpperCase() !== ctx.session.captcha.toUpperCase()) {
+      return this.error('验证码错误')
+    }
+    const user = await this.ctx.model.User.findOne({ 
+      email, 
+      pwd: md5(pwd + HashSalt) 
+    })
+    if (!user) {
+      return this.error('用户名或密码错误')
+    }
+    const token = jwt.sign({
+      _id: user._id,
+      email,
+    }, app.config.jwt.secret, {
+      expiresIn: '100h',
+    })
+    this.success({token})
   }
 
   async register() {
@@ -23,7 +42,7 @@ class UserController extends BaseController {
       return this.error('参数校验失败', -1, e.errors)
     }
 
-    const {email, pwd, captcha, nickname} = ctx.request.body
+    const { email, pwd, captcha, nickname } = ctx.request.body
     if (captcha.toUpperCase() !== ctx.session.captcha.toUpperCase()) {
       return this.error('验证码错误')
     }
