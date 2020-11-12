@@ -9,6 +9,11 @@ module.exports = app => {
   router.get('/', controller.home.index);
   router.get('/captcha', controller.util.captcha);
   router.get('/sendcode', controller.util.captcha);
+  
+  // 文件上传
+  router.post('/uploadFile', controller.util.uploadFile);
+
+  
   router.group({ 
     name: 'user',
     prefix: '/user'
@@ -24,6 +29,5 @@ module.exports = app => {
     router.post('/verify', verify)
 
     router.get('/info', jwt, info)
-
   })
 };
