@@ -41,6 +41,8 @@ class HomeController extends BaseController {
     const { ext, size, hash } = this.ctx.request.body
     const filePath = path.resolve(this.config.UPLOAD_DIR, `${hash}.${ext}`)
     await this.ctx.service.tools.mergeFile(filePath, hash, size)
+    const oriPath = path.resolve(this.config.UPLOAD_DIR, hash)
+    fse.removeSync(oriPath)
     this.success({
       url: `/public/${hash}.${ext}`
     })
