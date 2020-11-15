@@ -47,6 +47,30 @@ class HomeController extends BaseController {
       url: `/public/${hash}.${ext}`
     })
   }
+
+  async checkFile () {
+    const { ext, hash } = this.ctx.request.body
+    const filePath = path.resolve(this.config.UPLOAD_DIR, `${hash}.${ext}`)
+    let uploaded = false
+    let uploadedList = []
+    if (fse.existsSync(filePath)) {
+      // 已经上传过的文件
+      uploaded = true
+    } else {
+      uploadedList = await this.getUploadedList(path.resolve(this.config.UPLOAD_DIR, hash))
+    }
+    this.success({
+      uploaded,
+      uploadedList
+    })
+  }
+
+  async getUploadedList (dir) {
+    // 读取文件，过滤掉系统问题，比如文件名是.开头的
+    return fse.existsSync(dir)
+      ? (await fse.readdir(dir)).filter(name => name[0] !== '.')
+      : []
+  }
 }
 
 module.exports = HomeController;
